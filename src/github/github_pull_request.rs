@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-
 use std::io::{Error, ErrorKind};
 
 use serde::{Deserialize, Serialize};
@@ -19,19 +18,20 @@ struct Data {
 
 #[derive(Deserialize, Debug)]
 struct Viewer {
-    issues: Issue,
+    pullRequests: PullRequest,
 }
 
 #[derive(Deserialize, Debug)]
-struct Issue {
-    nodes: Vec<IssueNode>,
+struct PullRequest {
+    nodes: Vec<PullRequestNode>,
 }
 
-#[derive(Deserialize, Clone, Debug)]
-pub struct IssueNode {
+#[derive(Deserialize, Debug)]
+pub struct PullRequestNode {
     pub number: i32,
     pub url: String,
     pub title: String,
+    pub bodyText: String,
     pub createdAt: String,
     pub updatedAt: String,
     pub repository: GitHubRepository,
@@ -40,22 +40,18 @@ pub struct IssueNode {
 #[derive(Serialize, Debug)]
 struct Variables {}
 
-pub async fn get_issues() -> Result<Vec<IssueNode>, Box<dyn std::error::Error>> {
+pub async fn get_pull_requests() -> Result<Vec<PullRequestNode>, Box<dyn std::error::Error>> {
     let query = String::from("
       {
         viewer {
-          issues(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          pullRequests(first: 10, orderBy: {field: UPDATED_AT, direction: DESC}) {
             nodes {
               number
               url
               title
+              bodyText
               createdAt
               updatedAt
-              labels(first: 10) {
-                nodes {
-                  name
-                }
-              }
               repository {
                 owner {
                   login
@@ -75,8 +71,11 @@ pub async fn get_issues() -> Result<Vec<IssueNode>, Box<dyn std::error::Error>> 
     let response = request_github_graphql_api(query, variables).await?;
     if response.status() == 200 {
         let json = response.json::<ResponseRoot>().await?;
-        Ok(json.data.viewer.issues.nodes)
+        Ok(json.data.viewer.pullRequests.nodes)
     } else {
-        Err(Box::new(Error::new(ErrorKind::Other, "Failed get_issues")))
+        Err(Box::new(Error::new(
+            ErrorKind::Other,
+            "Failed get_pull_requests",
+        )))
     }
 }
