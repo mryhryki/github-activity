@@ -27,5 +27,5 @@ jobs:
           cargo --version
       - name: build
         run: cargo build --release
-      - name: run
-        run: ./target/release/github-activity --help
+#      - name: run
+#        run: ./target/release/github-activity --help
