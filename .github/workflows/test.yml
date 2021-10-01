@@ -21,9 +21,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Update Rust
-        run: rustup update
-      - name: Show Rust version
         run: |
+          rustup update
           rustc --version
           cargo --version
       - name: build
