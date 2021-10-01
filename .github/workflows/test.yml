@@ -22,6 +22,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Setup Rust
         # https://www.rust-lang.org/tools/install
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        run: curl -y --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
       - name: build
         run: cargo build --release
