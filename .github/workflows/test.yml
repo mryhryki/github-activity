@@ -20,8 +20,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Setup Rust
-        # https://www.rust-lang.org/tools/install
-        run: curl -y --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      - name: Show Rust version
+        run: |
+          rustc --version
+          cargo --version
       - name: build
         run: cargo build --release
