@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
-use std::io::{Error, ErrorKind};
+use std::io;
+use std::io::{Error, ErrorKind, Write};
 
 use serde::{Deserialize, Serialize};
 
@@ -25,6 +26,7 @@ struct Viewer {
 #[derive(Deserialize, Debug)]
 struct Issue {
     nodes: Vec<IssueNode>,
+    pageInfo: PageInfo,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -37,46 +39,66 @@ pub struct IssueNode {
     pub repository: GitHubRepository,
 }
 
+#[derive(Deserialize, Debug)]
+struct PageInfo {
+    pub endCursor: Option<String>,
+}
+
 #[derive(Serialize, Debug)]
-struct Variables {}
+struct Variables {
+    After: Option<String>,
+}
 
 pub async fn get_issues() -> Result<Vec<IssueNode>, Box<dyn std::error::Error>> {
-    let query = String::from("
-      {
-        viewer {
-          issues(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
-            nodes {
-              number
-              url
-              title
-              createdAt
-              updatedAt
-              labels(first: 10) {
+    print!("Collect issues");
+    let mut issues: Vec<IssueNode> = vec![];
+    let mut end_cursor: Option<String> = None;
+
+    loop {
+        print!(".");
+        io::stdout().flush().unwrap();
+        let query = String::from("
+          query ($After: String) {
+            viewer {
+              issues(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}, after: $After) {
                 nodes {
-                  name
+                  number
+                  url
+                  title
+                  createdAt
+                  updatedAt
+                  repository {
+                    owner {
+                      login
+                    }
+                    name
+                  }
+                }
+                pageInfo {
+                  endCursor
                 }
               }
-              repository {
-                owner {
-                  login
-                }
-                name
-              }
-            }
-            pageInfo {
-              endCursor
             }
           }
+        ");
+        let variables = Variables {
+            After: end_cursor,
+        };
+        let response = request_github_graphql_api(query, variables).await?;
+        if response.status() != 200 {
+            return Err(Box::new(Error::new(ErrorKind::Other, "Failed get_issues")));
         }
-      }
-    ");
-    let variables = Variables {};
 
-    let response = request_github_graphql_api(query, variables).await?;
-    if response.status() == 200 {
         let json = response.json::<ResponseRoot>().await?;
-        Ok(json.data.viewer.issues.nodes)
-    } else {
-        Err(Box::new(Error::new(ErrorKind::Other, "Failed get_issues")))
+        for issue_node in json.data.viewer.issues.nodes {
+            issues.push(issue_node)
+        }
+        end_cursor = json.data.viewer.issues.pageInfo.endCursor;
+        if end_cursor.is_none() {
+            break;
+        }
     }
+
+    println!();
+    Ok(issues)
 }

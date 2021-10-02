@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
 use crate::activity::structs::Activity;
+use std::cmp::Ordering;
 
 pub fn write_activities(mut activities: Vec<Activity>) {
     activities.sort_by(|a1, a2| {
@@ -18,6 +18,10 @@ pub fn write_activities(mut activities: Vec<Activity>) {
             repo = String::from(&activity.repo);
             println!("\n# {}\n", repo);
         }
-        println!("- [{}]({})", activity.title.replace("\n", " "), activity.url)
+        println!(
+            "- [{}]({})",
+            activity.title.replace("\n", " "),
+            activity.url
+        )
     }
 }

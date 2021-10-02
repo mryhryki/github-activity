@@ -1,9 +1,9 @@
-use chrono::{DateTime};
 use crate::activity::structs::Activity;
 use crate::activity::writer::write_activities;
 use crate::github::github_issue::get_issues;
 use crate::github::github_issue_comment::get_issue_comments;
 use crate::github::github_pull_request::get_pull_requests;
+use chrono::DateTime;
 
 mod activity;
 mod github;
@@ -31,7 +31,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     for comment in get_issue_comments().await? {
-        let mut title = comment.bodyText.as_str().chars().take(100).collect::<String>();
+        let mut title = comment
+            .bodyText
+            .as_str()
+            .chars()
+            .take(100)
+            .collect::<String>();
         if comment.bodyText.len() > 100 {
             title = format!("{}...", title)
         }
