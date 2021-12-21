@@ -4,7 +4,7 @@ use serde::Serialize;
 use std::env;
 
 fn get_authorization_header_for_github() -> String {
-    match env::var("GITHUB_ACCESS_TOKEN") {
+    match env::var("GITHUB_PERSONAL_ACCESS_TOKEN") {
         Ok(val) => format!("bearer {}", val),
         Err(_err) => ("").to_string(),
     }
@@ -39,23 +39,23 @@ pub async fn request_github_graphql_api<T: Serialize>(
 }
 
 // https://developer.github.com/v3/
-pub async fn get_github_api_v3(path: &String) -> Result<Response, Box<dyn std::error::Error>> {
-    let url = format!(
-        "{base}{path}",
-        base = "https://api.github.com",
-        path = &path
-    );
-
-    let res = reqwest::Client::new()
-        .get(url)
-        .header("User-Agent", "mryhryki/github-activity")
-        .header("Accept", "application/vnd.github.v3+json")
-        .header("Authorization", get_authorization_header_for_github())
-        .send()
-        .await?;
-    if res.status() != 200 {
-        println!("{:#?}", res.status());
-    }
-
-    Ok(res)
-}
+// pub async fn get_github_api_v3(path: &String) -> Result<Response, Box<dyn std::error::Error>> {
+//     let url = format!(
+//         "{base}{path}",
+//         base = "https://api.github.com",
+//         path = &path
+//     );
+//
+//     let res = reqwest::Client::new()
+//         .get(url)
+//         .header("User-Agent", "mryhryki/github-activity")
+//         .header("Accept", "application/vnd.github.v3+json")
+//         .header("Authorization", get_authorization_header_for_github())
+//         .send()
+//         .await?;
+//     if res.status() != 200 {
+//         println!("{:#?}", res.status());
+//     }
+//
+//     Ok(res)
+// }
