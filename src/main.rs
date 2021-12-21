@@ -10,8 +10,8 @@ mod github;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let from = DateTime::parse_from_rfc3339("2021-09-01T00:00:00+09:00").unwrap();
-    let to = DateTime::parse_from_rfc3339("2021-10-01T00:00:00+09:00").unwrap();
+    let from = DateTime::parse_from_rfc3339("2021-12-21T00:00:00+09:00").unwrap();
+    let to = DateTime::parse_from_rfc3339("2021-12-21T23:59:59+09:00").unwrap();
     let filter = |iso8601: &String| -> bool {
         let time = DateTime::parse_from_rfc3339(iso8601).unwrap();
         from <= time && time < to
